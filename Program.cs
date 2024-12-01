@@ -21,7 +21,8 @@ namespace EFSync
                 }
 
                 SynchronizeQuestionListsToTarget(source, target);
-                //GetSameQuestionLists(source, target);
+                // GetQuestionListsSource(source);
+                // GetQuestionListsTarget(target);
             }
         }
 
@@ -177,6 +178,51 @@ namespace EFSync
                         }
                     }
                 }
+        }
+
+        public static void GetQuestionListsSource(SourceContext context){
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var questionLists =  context.QuestionList
+                    .Include(ql => ql.SystemType)
+                    .Include(ql => ql.QuestionListSections)
+                     .ThenInclude(ql => ql.Questions)
+                        .ThenInclude(q => q.SingleChoiceOptions)
+                    .Include(ql => ql.QuestionListSections)
+                     .ThenInclude(ql => ql.Questions)
+                        .ThenInclude(q => q.MultipleChoiceOptions)
+                    .Include(ql => ql.QuestionListSections)
+                     .ThenInclude(ql => ql.Questions)
+                        .ThenInclude(q => q.ENSIAQuestionMetadata)
+                        // .Where(ql => ql.Guid == Guid.Parse("04de85fe-254b-4076-944b-80636e512355"))
+                        .Where(ql => ql.SystemPhase >= 3150 && ql.SystemPhase < 3250) 
+
+                    .ToList();
+
+            watch.Stop();
+            Console.WriteLine("Source Count: " + questionLists.Count);
+            Console.WriteLine("Source: " + watch.ElapsedMilliseconds);
+        }
+
+        public static void GetQuestionListsTarget(TargetContext context){
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var questionLists =  context.QuestionList
+                    .Include(ql => ql.SystemType)
+                    .Include(ql => ql.QuestionListSections)
+                     .ThenInclude(ql => ql.Questions)
+                        .ThenInclude(q => q.SingleChoiceOptions)
+                    .Include(ql => ql.QuestionListSections)
+                     .ThenInclude(ql => ql.Questions)
+                        .ThenInclude(q => q.MultipleChoiceOptions)
+                    .Include(ql => ql.QuestionListSections)
+                     .ThenInclude(ql => ql.Questions)
+                        .ThenInclude(q => q.ENSIAQuestionMetadata)
+                    // .Where(ql => ql.Guid == Guid.Parse("5156e99b-347f-45e3-b3a3-1887234b1103"))
+                    .Where(ql => ql.SystemPhase < 101) 
+                    .ToList();
+
+            watch.Stop();
+            Console.WriteLine("Target Count: " + questionLists.Count);
+            Console.WriteLine("Target: " + watch.ElapsedMilliseconds);
         }
 
         public static void SetDefaultItems(SourceContext source, TargetContext target){
